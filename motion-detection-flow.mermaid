@@ -1,0 +1,40 @@
+flowchart LR
+    subgraph Input
+        VS[Video Stream]
+        FE[Frame Extractor]
+    end
+
+    subgraph Frame Processing
+        F1[Frame t]
+        F2[Frame t+1]
+    end
+
+    subgraph Analysis
+        FD[Frame Difference Analysis]
+        TH[Threshold Application]
+        MD[Motion Detection]
+    end
+
+    subgraph Output
+        EE[Event Emitter]
+    end
+
+    VS -->|Stream| FE
+    FE -->|Extract| F1
+    FE -->|Extract| F2
+    F1 -->|Compare| FD
+    F2 -->|Compare| FD
+    FD --> TH
+    TH --> MD
+    MD -->|Motion Detected| EE
+    
+    style VS fill:#e1f5fe,stroke:#01579b
+    style FE fill:#e1f5fe,stroke:#01579b
+    style F1 fill:#f3e5f5,stroke:#4a148c
+    style F2 fill:#f3e5f5,stroke:#4a148c
+    style FD fill:#fff3e0,stroke:#e65100
+    style TH fill:#fff3e0,stroke:#e65100
+    style MD fill:#fff3e0,stroke:#e65100
+    style EE fill:#e8f5e9,stroke:#1b5e20
+
+    classDef default fill:#fff,stroke:#333,stroke-width:2px
