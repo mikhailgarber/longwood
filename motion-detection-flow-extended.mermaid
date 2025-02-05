@@ -1,0 +1,68 @@
+flowchart TD
+    subgraph Input
+        VS[Video Stream]
+        FE[Frame Extractor]
+    end
+
+    subgraph Frame Processing
+        F1[Frame t]
+        F2[Frame t+1]
+    end
+
+    subgraph Analysis
+        FD[Frame Difference Analysis]
+        TH[Threshold Application]
+        MD[Motion Detection]
+    end
+
+    subgraph Event Handling
+        EE[Event Emitter]
+        EH[Event Handler]
+        FM[Frame Modifier]
+    end
+
+    subgraph Output Processing
+        MF1[Modified Frame t]
+        MF2[Modified Frame t+1]
+        SR[Stream Reconstructor]
+        OS[Output Stream]
+    end
+
+    VS -->|Stream| FE
+    FE -->|Extract| F1
+    FE -->|Extract| F2
+    F1 -->|Compare| FD
+    F2 -->|Compare| FD
+    FD --> TH
+    TH --> MD
+    MD -->|Motion Detected| EE
+    
+    EE -->|Motion Events| EH
+    EH -->|Draw Commands| FM
+    
+    F1 -->|Original Frame| FM
+    F2 -->|Original Frame| FM
+    
+    FM -->|Add Outline| MF1
+    FM -->|Add Outline| MF2
+    
+    MF1 -->|Modified Frame| SR
+    MF2 -->|Modified Frame| SR
+    SR -->|Reconstructed Stream| OS
+    
+    style VS fill:#e1f5fe,stroke:#01579b
+    style FE fill:#e1f5fe,stroke:#01579b
+    style F1 fill:#f3e5f5,stroke:#4a148c
+    style F2 fill:#f3e5f5,stroke:#4a148c
+    style FD fill:#fff3e0,stroke:#e65100
+    style TH fill:#fff3e0,stroke:#e65100
+    style MD fill:#fff3e0,stroke:#e65100
+    style EE fill:#e8f5e9,stroke:#1b5e20
+    style EH fill:#e8f5e9,stroke:#1b5e20
+    style FM fill:#e8f5e9,stroke:#1b5e20
+    style MF1 fill:#fce4ec,stroke:#880e4f
+    style MF2 fill:#fce4ec,stroke:#880e4f
+    style SR fill:#fff3e0,stroke:#e65100
+    style OS fill:#e1f5fe,stroke:#01579b
+
+    classDef default fill:#fff,stroke:#333,stroke-width:2px
