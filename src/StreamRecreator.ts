@@ -17,12 +17,13 @@ export class StreamRecreator implements FrameHandler {
             '-r', '30', // Frame rate
             '-i', 'pipe:0', // Input from stdin
             '-c:v', 'libx264',
+            '-b:v', '2M',
             '-preset', 'medium',
             '-crf', '23',
             '-pix_fmt', 'yuv420p',
-            '-movflags', '+faststart',
+            '-movflags', 'frag_keyframe+empty_moov',
             '-f', 'mp4',
-            'pipe:1' // Output to stdout
+            '-' // Output to stdout
         ]);
 
         this.ffmpegProcess.stdout.on('data', (data) => {

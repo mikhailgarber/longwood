@@ -8,6 +8,7 @@ export async function processStream(stream: Readable, frameHandler: FrameHandler
         ['-loglevel', 'info',
             '-i', 'pipe:0',
             '-pix_fmt', 'rgba',
+           // '-r', '30',
             '-f', 'rawvideo', '-',
         ], { stdio: ['pipe', 'pipe', process.stderr] });
 
