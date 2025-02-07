@@ -1,26 +1,22 @@
-export type RawFrame = {
+export interface RGBAFrame {
     sequence: number;
-    data: Buffer;
-    timestamp: number;
+    width: number;
+    height: number;
+    data: Buffer;      // RGBA pixel data
+    timestamp: number; // Frame timestamp in milliseconds
 }
 
-export type FrameWithChanges = RawFrame & {
-    changes: Pixel[];
+export interface VideoProcessorOptions {
+    fps?: number;
+    frameQuality?: number;
+    videoBitrate?: string;
+    videoCodec?: string;
+    width?: number;    // Output frame width
+    height?: number;   // Output frame height
 }
 
-export type Pixel = {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
+export interface Pixel {
     x: number;
     y: number;
 }
 
-export interface FrameHandler {
-    handleFrame: (frame: RawFrame) => void;
-};
-
-export interface ChangedFrameHandler {
-    handleFrame: (frame: FrameWithChanges) => void;
-};

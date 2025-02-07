@@ -1,43 +1,55 @@
-import { ChangedFrameHandler, FrameHandler, Pixel, RawFrame } from "./Types";
+import { Transform, TransformCallback } from "stream";
+import { Pixel, RGBAFrame } from "./Types";
 
-export class MotionDetector implements FrameHandler {
-    
-    private frameHandler: ChangedFrameHandler | null = null;
+export class MotionDetector extends Transform {
 
     constructor() {
+        super({
+            objectMode: true,
+        });
     }
 
-    public setChangedFrameHandler(frameHandler: ChangedFrameHandler): void {
-        this.frameHandler = frameHandler;
+    public _transform(frame: any, encoding: string, callback: TransformCallback): void {
+        const newFrame = this.handleFrame(frame);
+        callback(null, newFrame);
     }
 
     private previousFrame: Buffer | null = null;
 
-    public handleFrame(frame: RawFrame): void {
+    private handleFrame(frame: RGBAFrame): RGBAFrame {
         if (this.previousFrame) {
-            const diff = this.differentPixels(this.previousFrame, frame.data);
-            console.log(`frame ${frame.sequence} timestamp ${frame.timestamp} diff ${diff.length}`);
-            this.frameHandler?.handleFrame({ ...frame, changes: diff });
+            const diff = this.differentPixels(this.previousFrame, frame.data, frame.width);
+            const newData = Buffer.from(frame.data);
+            for (let i = 0; i < diff.length; i += 4) {
+                const pixel = diff[i];
+                const index = (pixel.y * frame.width + pixel.x) * 4;
+                newData[index] = 255;       // R
+                newData[index + 1] = 255;   // G
+                newData[index + 2] = 0;     // B
+            }
+            this.previousFrame = frame.data;
+            frame.data = newData;
+            console.log(`frame ${frame.sequence} timestamp ${frame.timestamp} diff ${diff.length} handled`);
+        } else {
+            this.previousFrame = frame.data;
         }
-        this.previousFrame = frame.data;
+
+        return frame;
     }
 
-    private differentPixels(previousFrame: Buffer, currentFrame: Buffer): Pixel[] {
-        const threshold = 50; // predefined level
-        let diff = 0;
+    private differentPixels(frame: Buffer, currentFrame: Buffer, width: number): Pixel[] {
+        const threshold = 70; // predefined level
+        const totalPixels = frame.length / 4;
+        const step = Math.floor(totalPixels / (totalPixels * 0.25)); // 25% of total pixels
+
         const pixels: Pixel[] = [];
-        for (let i = 0; i < previousFrame.length; i += 4) { // assuming rgba format
-            const prevLuminocity = this.luminocity(previousFrame[i], previousFrame[i + 1], previousFrame[i + 2]);
+        for (let i = 0; i < frame.length; i += 4 * step) { // assuming rgba format
+            const prevLuminocity = this.luminocity(frame[i], frame[i + 1], frame[i + 2]);
             const currLuminocity = this.luminocity(currentFrame[i], currentFrame[i + 1], currentFrame[i + 2]);
             if (Math.abs(prevLuminocity - currLuminocity) > threshold) {
-                diff++;
                 pixels.push({
-                    r: currentFrame[i],
-                    g: currentFrame[i + 1],
-                    b: currentFrame[i + 2],
-                    a: currentFrame[i + 3],
-                    x: i / 4 % 1920,
-                    y: Math.floor(i / 4 / 1920)
+                    x: (i / 4) % width,
+                    y: Math.floor(i / 4 / width)
                 });
             }
         }
