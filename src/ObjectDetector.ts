@@ -75,14 +75,14 @@ export class ObjectDetector extends Transform {
 
     private async handleFrame(frame: RGBAFrame): Promise<RGBAFrame> {
         console.log(`OD: Processing frame ${frame.sequence}...`);
-        const jpegBuffer = await rgbaToJpeg(frame.data, {height: frame.height, width: frame.width, quality: 80});
+        const jpegBuffer = await rgbaToJpeg(frame.data, { height: frame.height, width: frame.width, quality: 80 });
         const odPromise = new Promise((resolve, reject) => {
             this.odResolve = resolve;
             this.objectDetectorProcess.stdin.write(jpegBuffer);
         });
         const detections = (await odPromise) as DetectedObject[];
         console.log(`OD: Frame ${frame.sequence} processed with ${detections.length} detections`);
-        const newData = Buffer.from(frame.data);
+        let newData = Buffer.from(frame.data);
         for (const detection of detections) {
             const { x, y, width, height } = detection;
             for (let i = x; i < x + width; i++) {
@@ -101,19 +101,17 @@ export class ObjectDetector extends Transform {
                 newData[(j * frame.width + x + width) * 4 + 1] = 255; // G
                 newData[(j * frame.width + x + width) * 4 + 2] = 0; // B
             }
-            /*
-            await writeTextOnImage(newData, frame.width, frame.height, {
-                text: detection.token,
-                x: x,
-                y: y,
-                fontSize: 8,
-                color: '#FF0000',
-                align: 'left',
-                baseline: 'top'
-            });
-            */
+
+
+
         }
-        frame.data = newData;
+        // frame.data = newData;
+        frame.data = await writeTextOnImage(newData, frame.width, frame.height, detections, {
+            fontSize: 14,
+            color: '#FFFF00',
+            align: 'left',
+            baseline: 'top'
+        });
         return frame;
     }
 

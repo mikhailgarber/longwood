@@ -1,9 +1,7 @@
 import { createCanvas, ImageData, loadImage } from 'canvas';
+import { DetectedObject } from './ObjectDetector';
 
 interface TextOptions {
-    text: string;
-    x: number;
-    y: number;
     fontSize?: number;
     fontFamily?: string;
     color?: string;
@@ -23,6 +21,7 @@ export async function writeTextOnImage(
     imageBuffer: Buffer,
     width: number,
     height: number,
+    detections: DetectedObject[],
     options: TextOptions
 ): Promise<Buffer> {
     // Create canvas with image dimensions
@@ -46,8 +45,21 @@ export async function writeTextOnImage(
     ctx.textBaseline = options.baseline || 'top';
 
     // Write text
-    ctx.fillText(options.text, options.x, options.y);
-
+    for (const detection of detections) {
+        const { x, y, width, height } = detection;
+        ctx.fillText(`  ${detection.token}`, x, y);
+    }
     // Return new buffer
-    return canvas.toBuffer();
+
+    const rawBuffer =  canvas.toBuffer('raw');
+    const rgbaBuffer = Buffer.alloc(rawBuffer.length);
+
+    for (let i = 0; i < rawBuffer.length; i += 4) {
+        rgbaBuffer[i] = rawBuffer[i + 2];     // R
+        rgbaBuffer[i + 1] = rawBuffer[i + 1]; // G
+        rgbaBuffer[i + 2] = rawBuffer[i];     // B
+        rgbaBuffer[i + 3] = rawBuffer[i + 3]; // A
+    }
+
+    return rgbaBuffer;
 }
