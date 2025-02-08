@@ -107,5 +107,6 @@
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
-  }
+  },
+  "exclude": ["object_detector", "build", "dist", "node_modules", "out", "test", "tests", "tmp", "typings"]
 }

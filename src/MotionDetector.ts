@@ -26,6 +26,7 @@ export class MotionDetector extends Transform {
                 newData[index] = 255;       // R
                 newData[index + 1] = 255;   // G
                 newData[index + 2] = 0;     // B
+                newData[index + 3] = 255;   // A
             }
             this.previousFrame = frame.data;
             frame.data = newData;

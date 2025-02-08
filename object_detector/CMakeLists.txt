@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 2.8)
+project( object_detector )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+add_executable( object_detector object_detector.cpp )
+target_link_libraries( object_detector Threads::Threads ${OpenCV_LIBS} )
