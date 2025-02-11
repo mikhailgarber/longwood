@@ -614,7 +614,53 @@ private createFFmpegReadStream(inputStream: Readable): Transform {
             </div>
         </div>
 
-        
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Transforming Video Stream to RGBA Frames</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Video streams must be parsed into individual RGBA frames for processing</li>
+                            <li>Each frame contains width × height × 4 bytes (RGBA format)</li>
+                            <li>Frames are tagged with sequence numbers and timestamps</li>
+                            <li>Stream processing handles partial frame data using buffering</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+class FrameParser extends Transform {
+  constructor(width, height, fps) {
+    super({ readableObjectMode: true });
+    this.frameSize = width * height * 4;
+    this.buffer = Buffer.alloc(0);
+    this.frameCount = 0;
+  }
+  _transform(chunk: Buffer, encoding: string, callback: Function) {
+    // Append new data to existing buffer
+    this.buffer = Buffer.concat([this.buffer, chunk]);
+    // Process complete frames
+    while (this.buffer.length >= this.frameSize) {
+        const frameData = this.buffer.slice(0, this.frameSize);
+        this.buffer = this.buffer.slice(this.frameSize);
+        const sequence = this.frameCount++;
+        const frame: RGBAFrame = {
+            width: this.width,
+            height: this.height,
+            data: frameData,
+            sequence,
+            timestamp: (sequence * 1000) / this.fps // Calculate timestamp in ms
+        };
+        this.push(frame);
+    }
+    callback();
+ } 
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- FFmpeg Write Stream Slide -->
         <div class="slide">
             <div class="slide-content">
@@ -712,6 +758,190 @@ public async process(
                 </div>
             </div>
         </div>
+
+        <!-- Frame Processing Demo -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Demo: Color Inversion</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Simple yet effective demonstration of frame-by-frame processing</li>
+                            <li>Each pixel's color channels are inverted: new_value = 255 - original_value</li>
+                            <li>Maintains original video's resolution and frame rate</li>
+                            <li>Real-time processing possible with efficient implementation</li>
+                        </ul>
+                        <pre class="code-block">
+// Color inversion processing
+export class ColorInverter extends Transform {
+    constructor() {
+        super({
+            objectMode: true,
+            transform(frame, encoding, callback) {
+                const newData = Buffer.from(frame.data);
+                for (let i = 0; i < newData.length; i += 4) {
+                    // Invert RGB values, leave alpha unchanged
+                    newData[i] = 255 - newData[i];       // R
+                    newData[i + 1] = 255 - newData[i + 1]; // G
+                    newData[i + 2] = 255 - newData[i + 2]; // B
+                }
+                frame.data = newData;
+                callback(null, frame);
+            }
+        });
+    }
+}</pre>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <h3 style="margin-bottom: 0.5rem;">Original Video</h3>
+                            <video src="street.mp4" controls style="width: 100%; border-radius: 4px;"></video>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom: 0.5rem;">Inverted Colors</h3>
+                            <video src="street-inverted.mp4" controls style="width: 100%; border-radius: 4px;"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motion Detection -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Our Motion Detection Implementation</h2>
+
+
+                <ul style="margin-left: 1rem; margin-top: 0.25rem; margin-bottom: 0.5rem">
+
+                    <li style="margin-bottom: 0.25rem">Stores the previous frame buffer for comparison with current
+                        frame</li>
+
+                    <li style="margin-bottom: 0.25rem">Each frame is processed as RGBA pixels (4 bytes per pixel:
+                        Red, Green, Blue, Alpha)</li>
+                    <li style="margin-bottom: 0.25rem">Calculates luminosity difference between corresponding pixels
+                        in consecutive frames</li>
+                    <li style="margin-bottom: 0.25rem">Uses threshold of 70 for luminosity difference to detect
+                        significant motion</li>
+                    <li style="margin-bottom: 0.25rem">Luminosity is calculated using industry-standard
+                        coefficients: R(0.2126) + G(0.7152) + B(0.722)</li>
+                    <li style="margin-bottom: 0.25rem">Performance optimization: Samples 25% of total pixels instead
+                        of processing every pixel</li>
+                    <li style="margin-bottom: 0.25rem">When motion is detected, highlights changed regions by
+                        setting pixels to yellow (R:255, G:255, B:0)</li>
+                    <li style="margin-bottom: 0.25rem">Maintains frame sequence and timestamp information for
+                        accurate motion tracking</li>
+                    <li style="margin-bottom: 0.25rem">Memory efficient: Processes frames in-place using Node.js
+                        Buffer for pixel data</li>
+                    <li style="margin-bottom: 0.25rem">Stream-based architecture: Integrates with Node.js Transform
+                        streams for real-time processing</li>
+
+                </ul>
+
+
+            </div>
+        </div>
+
+
+        <!-- Motion Detection Code -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Motion Detection Implementation</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Compare current frame with previous frame</li>
+                            <li>Mark changed pixels in yellow for visualization</li>
+                            <li>Uses Buffer manipulation for direct pixel access</li>
+                            <li>RGBA color values: Yellow = (255, 255, 0, 255)</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+private handleFrame(frame: RGBAFrame): RGBAFrame {
+    if (this.previousFrame) {
+        // Get pixels that changed vs previous frame
+        const diff = this.differentPixels(
+            this.previousFrame, 
+            frame.data, 
+            frame.width
+        );
+        
+        // Create new buffer for modified frame
+        const newData = Buffer.from(frame.data);
+        
+        // Paint changed pixels yellow
+        for (let i = 0; i < diff.length; i += 4) {
+            const pixel = diff[i];
+            const index = (pixel.y * frame.width + pixel.x) * 4;
+            newData[index] = 255;     // R
+            newData[index + 1] = 255; // G
+            newData[index + 2] = 0;   // B
+            newData[index + 3] = 255; // A
+        }
+        
+        this.previousFrame = frame.data;
+        frame.data = newData;
+    } else {
+        this.previousFrame = frame.data;
+    }
+    return frame;
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Motion Detection Demo -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Demo: Motion Detection in Action</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+private differentPixels(previousFrame: Buffer, 
+currentFrame: Buffer, width: number): Pixel[] {
+ const threshold = 70; // predefined level
+ const totalPixels = previousFrame.length / 4;
+ const step = Math.floor(totalPixels / 
+ (totalPixels * 0.25)); // 25% of total pixels
+ const pixels: Pixel[] = [];
+ for (let i = 0; i < previousFrame.length; i += 4 * step) { 
+    // assuming rgba format
+    const prevLuminocity = this.luminocity(previousFrame[i], 
+    previousFrame[i + 1], previousFrame[i + 2]);
+    const currLuminocity = this.luminocity(currentFrame[i], 
+    currentFrame[i + 1], currentFrame[i + 2]);
+    if (Math.abs(prevLuminocity - currLuminocity) > threshold) {
+        pixels.push({
+            x: (i / 4) % width,
+            y: Math.floor(i / 4 / width)
+                    });
+    }
+ }
+ return pixels;
+}</pre>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 2rem;">
+                        <div style="text-align: center;">
+                            <h3 style="margin-bottom: 1rem;">Original Video</h3>
+                            <video width="100%" controls>
+                                <source src="street.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <div style="text-align: center;">
+                            <h3 style="margin-bottom: 1rem;">Motion Detection</h3>
+                            <video width="100%" controls>
+                                <source src="street-motion-detection.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 

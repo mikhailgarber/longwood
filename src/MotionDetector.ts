@@ -38,14 +38,14 @@ export class MotionDetector extends Transform {
         return frame;
     }
 
-    private differentPixels(frame: Buffer, currentFrame: Buffer, width: number): Pixel[] {
+    private differentPixels(previousFrame: Buffer, currentFrame: Buffer, width: number): Pixel[] {
         const threshold = 70; // predefined level
-        const totalPixels = frame.length / 4;
+        const totalPixels = previousFrame.length / 4;
         const step = Math.floor(totalPixels / (totalPixels * 0.25)); // 25% of total pixels
 
         const pixels: Pixel[] = [];
-        for (let i = 0; i < frame.length; i += 4 * step) { // assuming rgba format
-            const prevLuminocity = this.luminocity(frame[i], frame[i + 1], frame[i + 2]);
+        for (let i = 0; i < previousFrame.length; i += 4 * step) { // assuming rgba format
+            const prevLuminocity = this.luminocity(previousFrame[i], previousFrame[i + 1], previousFrame[i + 2]);
             const currLuminocity = this.luminocity(currentFrame[i], currentFrame[i + 1], currentFrame[i + 2]);
             if (Math.abs(prevLuminocity - currLuminocity) > threshold) {
                 pixels.push({
