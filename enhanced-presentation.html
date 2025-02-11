@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
     <style>
@@ -185,6 +186,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="progress">
         <div class="progress-bar" id="progressBar"></div>
@@ -196,181 +198,521 @@
             <div class="slide-content title-slide">
                 <h1>Computer Vision in Action</h1>
                 <h2>From Motion Detection to Object Recognition</h2>
+                <h3>Presentation by Mikhail Garber, for Longwood University</h3>
+                <h4>February 18th, 2025</h4>
             </div>
         </div>
 
-        <!-- Overview -->
+        <!-- Bio Slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>About me</h2>
+                <ul>
+                    <li>Hi, my name is Mikhail Garber</li>
+                    <li>Technology veteran with over 30 years of experience in software development and leadership</li>
+                    <li>Led major projects at Microsoft, Salesforce, and Amazon, including AWS and satellite internet
+                        initiatives</li>
+                    <li>Successful entrepreneur - built and sold own software company</li>
+                    <li>Currently serving as Principal Engineer at Rula Mental Health, developing online mental
+                        healthcare platform</li>
+                    <li>Actively engaged in pro bono work to give back to the technology community</li>
+                    <li>You can find me at &nbsp; <a href="https://www.linkedin.com/in/mikhailgarber/">LinkedIn</a></li>
+                    <li>This presentation and all the code is free to copy, modify and extend </li>
+                    <li>Available at GitHub: &nbsp; <a
+                            href="https://github.com/mikhailgarber/longwood">github.com/mikhailgarber/longwood</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Computer Vision Introduction -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>What is Computer Vision?</h2>
+                <ul>
+                    <li>Field of artificial intelligence that enables computers to understand and process visual
+                        information from the world</li>
+                    <li>Combines advanced algorithms, machine learning, and neural networks to interpret and analyze
+                        digital images and videos</li>
+                    <li>Applications span from facial recognition and autonomous vehicles to medical imaging and
+                        industrial quality control</li>
+                    <li>Modern computer vision achieves human-level accuracy in many tasks thanks to deep learning
+                        breakthroughs</li>
+                    <li>Market size in US expected to reach $60 billion by 2025, powering innovations across industries
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Presentation Overview -->
         <div class="slide">
             <div class="slide-content">
                 <h2>What We'll Cover</h2>
                 <ul>
-                    <li>Live demonstration of motion detection</li>
-                    <li>Understanding the technology behind it</li>
-                    <li>Object detection in practice</li>
-                    <li>Implementation insights and code review</li>
+                    <li>Fundamentals of Computer Vision Data Structures: Understanding the building blocks - pixels,
+                        frames, and video streams - that form the foundation of all CV applications</li>
+                    <li>Motion Detection Deep Dive: From theory to practice - how to detect and track movement in
+                        real-time using frame differencing</li>
+                    <li>Object Detection Exploration: Understanding how modern neural networks can identify and classify
+                        objects in images and video streams using pre-trained models</li>
+                    <li>Practical Implementations: Live demonstrations and code examples showing both applications in
+                        action, with JavaScript implementations for computer vision</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Motion Detection Demo -->
+
+
+        <!-- Pixel Data Structure -->
         <div class="slide">
             <div class="slide-content">
-                <h2>Motion Detection Demo</h2>
-                <div class="demo-placeholder">
-                    [Live Demo Area]
+                <h2>Understanding Pixels</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>A pixel is the smallest unit of a digital image, represented as numeric values</li>
+                            <li>In grayscale: Single value (0-255) representing brightness</li>
+                            <li>In RGB: Three values representing Red, Green, and Blue intensities (each 0-255)</li>
+                            <li>Additional channels like Alpha (transparency) may be present</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+// Pixel representations in JavaScript
+const grayscale = 127;  // Medium gray
+
+const rgb = {
+  r: 255,  // Pure red
+  g: 0,
+  b: 0
+};
+
+const rgba = {
+  r: 0,    // Semi-transparent green
+  g: 255,
+  b: 0,
+  a: 0.5   // Alpha: 0 to 1
+};</pre>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Motion Detection Explanation -->
+        <!-- Frame Structure -->
         <div class="slide">
             <div class="slide-content">
-                <h2>How Motion Detection Works</h2>
+                <h2>Image Frames</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>A frame is a 2D array of pixels, forming a complete image</li>
+                            <li>Dimensions described as width × height (e.g., 1920×1080)</li>
+                            <li>Each pixel position accessed by x,y coordinates</li>
+                            <li>Memory size = width × height × channels × bit depth</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+// Working with frames using Canvas
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 1920;
+canvas.height = 1080;
+
+// Get pixel data from canvas
+const imageData = ctx.getImageData(
+  0, 0, canvas.width, canvas.height
+);
+const pixels = imageData.data;  // Uint8ClampedArray
+
+// Accessing a pixel (RGBA format)
+const getPixel = (x, y) => {
+  const i = (y * canvas.width + x) * 4;
+  return {
+    r: pixels[i],
+    g: pixels[i + 1],
+    b: pixels[i + 2],
+    a: pixels[i + 3] / 255
+  };
+};</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Stream -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Video Streams</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>A video stream is a sequence of frames over time</li>
+                            <li>Frame rate (FPS) determines frames captured per second</li>
+                            <li>Real-time processing requires efficient frame handling</li>
+                            <li>Streaming introduces concepts of buffering and latency</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+// Video stream using WebRTC
+async function startVideoStream() {
+  const stream = await navigator.mediaDevices
+    .getUserMedia({ video: true });
+  const video = document.createElement('video');
+  video.srcObject = stream;
+
+  // Process frames at 30 FPS
+  setInterval(() => {
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0);
+    
+    // Get frame data for processing
+    const frame = ctx.getImageData(
+      0, 0, canvas.width, canvas.height
+    );
+    
+    // Process frame here
+    processFrame(frame);
+  }, 1000 / 30);  // ~33ms per frame
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Video Compression and Encoding -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Why Do We Need Compression?</h2>
                 <ul>
-                    <li>Frame differencing and background subtraction</li>
-                    <li>Noise reduction and threshold application</li>
-                    <li>Contour detection and movement tracking</li>
-                    <li>Real-time processing considerations</li>
+                    <li>Raw Video Data Size:
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>1080p frame = 1920 × 1080 pixels</li>
+                            <li>Each pixel = 3 bytes (RGB) or 4 bytes (RGBA)</li>
+                            <li>Single 1080p frame = 1920 × 1080 × 3 = 6.2 MB</li>
+                            <li>At 30 FPS: 6.2 MB × 30 = 186 MB/second = 1.49 Gb/second</li>
+                            <li>One minute of raw video = 11.16 GB!</li>
+                        </ul>
+                    </li>
+                    <li>Modern Compression Solutions:
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>H.264/AVC can achieve 95-98% size reduction while maintaining quality</li>
+                            <li>1.49 Gb/s → 5-15 Mb/s after compression</li>
+                            <li>One minute of compressed 1080p ≈ 75-225 MB (vs 11.16 GB raw)</li>
+                        </ul>
+                    </li>
+                    <li>For Computer Vision Applications:
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Must decode compressed stream back to raw pixels for processing</li>
+                            <li>Requires efficient pipeline: Decode → Transform → Process → Encode</li>
+                            <li>Memory and CPU optimization crucial for real-time performance</li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
 
-        <!-- Motion Detection Flow Diagram -->
+
+
+        <!-- Common Flow Diagram -->
         <div class="slide">
             <div class="slide-content">
-                <h2>Motion Detection Flow</h2>
+                <h2>Common Processing Flow</h2>
                 <div class="mermaid">
-flowchart TD
-    subgraph Input
-        VS[Video Stream]
-        FE[Frame Extractor]
-    end
+                    flowchart LR
+                    subgraph Input
+                    VS[Video Stream<br />H.264/VP8/etc]
+                    end
 
-    subgraph Frame Processing
-        F1[Frame t]
-        F2[Frame t+1]
-    end
+                    subgraph Decoder
+                    D1[Stream-to-Frames Decoder]
+                    D2[Raw Frame Buffer]
+                    D1 --> D2
+                    end
 
-    subgraph Analysis
-        FD[Frame Difference Analysis]
-        TH[Threshold Application]
-        MD[Motion Detection]
-    end
+                    subgraph Transformer
+                    T1[Frame Processor]
+                    T2[Computer Vision<br />Logic]
+                    T1 --> T2
+                    end
 
-    subgraph Output
-        EE[Event Emitter]
-    end
+                    subgraph Encoder
+                    E1[Frames-to-Stream Encoder]
+                    end
 
-    VS -->|Stream| FE
-    FE -->|Extract| F1
-    FE -->|Extract| F2
-    F1 -->|Compare| FD
-    F2 -->|Compare| FD
-    FD --> TH
-    TH --> MD
-    MD -->|Motion Detected| EE
-    
-    style VS fill:#e1f5fe,stroke:#01579b
-    style FE fill:#e1f5fe,stroke:#01579b
-    style F1 fill:#f3e5f5,stroke:#4a148c
-    style F2 fill:#f3e5f5,stroke:#4a148c
-    style FD fill:#fff3e0,stroke:#e65100
-    style TH fill:#fff3e0,stroke:#e65100
-    style MD fill:#fff3e0,stroke:#e65100
-    style EE fill:#e8f5e9,stroke:#1b5e20
+                    VS --> D1
+                    D2 --> |RGBA Pixels| T1
+                    T2 --> |Processed Pixels| E1
+                    E1 --> |Video Stream| Output
 
-    classDef default fill:#fff,stroke:#333,stroke-width:2px
+                    style VS fill:#f9f,stroke:#333
+                    style D2 fill:#bbf,stroke:#333
+                    style T2 fill:#bfb,stroke:#333
                 </div>
             </div>
         </div>
 
-        <!-- Motion Detection Code -->
         <div class="slide">
             <div class="slide-content">
-                <h2>Implementation Highlights</h2>
-                <pre class="code-block">
-def detect_motion(frame1, frame2):
-    # Convert frames to grayscale
-    gray1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
-    gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+                <h2>FFmpeg: Universal Tool for Video Processing</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>FFmpeg is a powerful open-source multimedia framework for handling video, audio, and
+                                other multimedia files</li>
+                            <li>Key Components:
+                                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                    <li>ffmpeg: Command-line tool for media conversion</li>
+                                    <li>ffplay: Media player for testing and debugging</li>
+                                    <li>ffprobe: Media stream analyzer</li>
+                                </ul>
+                            </li>
+                            <li>Common CV Applications:
+                                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                    <li>Video format conversion for preprocessing</li>
+                                    <li>Frame extraction for analysis</li>
+                                    <li>Real-time streaming and processing</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+    // Extract frames from video
+    ffmpeg -i input.mp4 -vf fps=1 frame_%d.jpg
     
-    # Calculate difference and threshold
-    diff = cv2.absdiff(gray1, gray2)
-    thresh = cv2.threshold(diff, 25, 255, 
-                          cv2.THRESH_BINARY)[1]
+    // Convert video format for processing
+    ffmpeg -i input.mp4 -c:v rawvideo \
+           -pix_fmt rgb24 output.raw
     
-    # Find contours
-    contours, _ = cv2.findContours(
-        thresh, cv2.RETR_EXTERNAL, 
-        cv2.CHAIN_APPROX_SIMPLE)
+    // Real-time streaming with processing
+    ffmpeg -f v4l2 -i /dev/video0 \
+           -vf "threshold" \
+           -f sdl "Motion Detection"
     
-    return contours</pre>
-            </div>
-        </div>
-
-        <!-- Object Detection Demo -->
-        <div class="slide">
-            <div class="slide-content">
-                <h2>Object Detection Demo</h2>
-                <div class="demo-placeholder">
-                    [Live Demo Area]
+    // Analyze video metadata
+    ffprobe -v quiet -print_format json \
+            -show_format -show_streams \
+            input.mp4</pre>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Object Detection Explanation -->
         <div class="slide">
             <div class="slide-content">
-                <h2>Understanding Object Detection</h2>
+                <h2>Complete Processing Pipeline</h2>
                 <ul>
-                    <li>Deep learning-based approach using neural networks</li>
-                    <li>Pre-trained models and transfer learning</li>
-                    <li>Real-time detection and classification</li>
-                    <li>Performance optimization techniques</li>
+                    <li>Stage 1 - Input Decoding:
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Input video stream (H.264, VP8, etc.) is fed into first FFmpeg process</li>
+                            <li>FFmpeg decodes stream into sequence of raw RGBA frames</li>
+                            <li>Uses rawvideo codec and rgba pixel format for maximum compatibility</li>
+                        </ul>
+                    </li>
+                    <li>Stage 2 - CV Processing:
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Each raw frame is processed by custom CV application</li>
+                            <li>Can implement motion detection, object recognition, or other CV logic</li>
+                            <li>Operates on raw pixel data for maximum flexibility</li>
+                        </ul>
+                    </li>
+                    <li>Stage 3 - Output Encoding:
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Processed frames are fed into second FFmpeg process</li>
+                            <li>FFmpeg re-encodes frames into compressed video stream</li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
 
-        <!-- Object Detection Code -->
+
+        <!-- Core Types -->
         <div class="slide">
             <div class="slide-content">
-                <h2>Object Detection Implementation</h2>
-                <pre class="code-block">
-# Object detection using YOLO
-def detect_objects(frame):
-    # Prepare image for YOLO
-    blob = cv2.dnn.blobFromImage(
-        frame, 1/255, (416, 416), 
-        swapRB=True, crop=False)
-    net.setInput(blob)
-    
-    # Get detections
-    outs = net.forward(output_layers)
-    
-    # Process detections
-    for out in outs:
-        for detection in out:
-            scores = detection[5:]
-            class_id = np.argmax(scores)
-            confidence = scores[class_id]
-            
-            if confidence > 0.5:
-                # Object detected</pre>
+                <h2>Core Data Types</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>RGBA Frame: Complete frame of video with metadata</li>
+                            <li>Video Processor Options: Configuration for processing pipeline</li>
+                            <li>Pixel: Simple x,y coordinate representation</li>
+                            <li>These types form the foundation of our video processing system</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+interface RGBAFrame {
+    sequence: number;      // Frame number
+    width: number;        // Frame width
+    height: number;       // Frame height
+    data: Buffer;         // RGBA pixel data
+    timestamp: number;    // Time in ms
+}
+
+interface VideoProcessorOptions {
+    fps?: number;         // Frames per second
+    frameQuality?: number;
+    videoBitrate?: string;
+    videoCodec?: string;
+    width?: number;       // Output width
+    height?: number;      // Output height
+}
+
+interface Pixel {
+    x: number;           // X coordinate
+    y: number;           // Y coordinate
+}</pre>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Conclusion -->
+        <!-- FFmpeg Read Stream Slide -->
         <div class="slide">
             <div class="slide-content">
-                <h2>Thank You!</h2>
-                <ul>
-                    <li>We've seen computer vision in action</li>
-                    <li>Explored both motion and object detection</li>
-                    <li>Demonstrated practical implementations</li>
-                    <li>Ready for your questions</li>
-                </ul>
+                <h2>Creating Video Read Stream</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Uses FFmpeg to decode input video stream into raw RGBA frames</li>
+                            <li>Creates a transform stream that parses raw video data into frame objects</li>
+                            <li>Configurable frame rate and resolution settings</li>
+                            <li>Handles errors through FFmpeg stderr events</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1.5;">
+                        <pre class="code-block">
+private createFFmpegReadStream(inputStream: Readable): Transform {
+    const ffmpeg = spawn('ffmpeg', [
+        '-i', 'pipe:0',           // Read from stdin
+        '-f', 'rawvideo',         // Output raw video
+        '-pix_fmt', 'rgba',       // RGBA pixel format
+        '-s', `${this.options.width}x${this.options.height}`,
+        '-r', String(this.options.fps),
+        '-'                       // Write to stdout
+    ]);
+
+    // Create frame parser transform
+    const frameParser = new FrameParser(
+        this.options.width,
+        this.options.height,
+        this.options.fps
+    );
+
+    // Connect streams
+    inputStream.pipe(ffmpeg.stdin);
+    ffmpeg.stdout.pipe(frameParser);
+
+    return frameParser;
+}</pre>
+                    </div>
+                </div>
             </div>
         </div>
+
+        
+        <!-- FFmpeg Write Stream Slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Creating Video Write Stream</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Converts processed frames back into compressed video</li>
+                            <li>Configurable output codec and bitrate settings</li>
+                            <li>Uses yuv420p format for maximum compatibility</li>
+                            <li>Enables streaming with proper MP4 fragmentation</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1.5;">
+                        <pre class="code-block">
+private createFFmpegWriteStream(outputStream: Writable): Transform {
+    const ffmpeg = spawn('ffmpeg', [
+        '-f', 'rawvideo',
+        '-vcodec', 'rawvideo',
+        '-s', `${this.options.width}x${this.options.height}`,
+        '-pix_fmt', 'rgba',
+        '-framerate', String(this.options.fps),
+        '-i', 'pipe:0',
+        '-c:v', this.options.videoCodec,
+        '-b:v', this.options.videoBitrate,
+        '-pix_fmt', 'yuv420p',
+        '-movflags', 'frag_keyframe+empty_moov',
+        '-f', 'mp4',
+        '-'
+    ]);
+
+    // Create frame serializer
+    const frameSerializer = new Transform({
+        objectMode: true,
+        transform(frame: RGBAFrame, encoding, callback) {
+            callback(null, frame.data);
+        }
+    });
+
+    frameSerializer.pipe(ffmpeg.stdin);
+    ffmpeg.stdout.pipe(outputStream);
+
+    return frameSerializer;
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Processing Slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Custom Frame Processing</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Flexible transform stream for custom frame processing</li>
+                            <li>Works with RGBAFrame objects in object mode</li>
+                            <li>Can modify pixel data for effects or analysis</li>
+                            <li>Uses Node.js pipeline for proper error handling</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1.5;">
+                        <pre class="code-block">
+public async process(
+    inputStream: Readable,
+    outputStream: Writable,
+    frameProcessor?: Transform
+): Promise<void> {
+    try {
+        // Create processing pipeline
+        const readStream = this.createFFmpegReadStream(inputStream);
+        const writeStream = this.createFFmpegWriteStream(outputStream);
+
+        // Default pass-through processor if none provided
+        const processor = frameProcessor || new Transform({
+            objectMode: true,
+            transform(frame: RGBAFrame, encoding, callback) {
+                callback(null, frame);
+            }
+        });
+
+        // Connect all streams
+        await pipeline(
+            readStream,
+            processor,
+            writeStream
+        );
+    } catch (error) {
+        console.error('Error during processing:', error);
+        throw error;
+    }
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="nav">
@@ -438,4 +780,5 @@ def detect_objects(frame):
         updateSlides();
     </script>
 </body>
+
 </html>

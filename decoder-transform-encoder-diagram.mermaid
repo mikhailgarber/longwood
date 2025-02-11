@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph Input
+        VS[Video Stream<br/>H.264/VP8/etc]
+    end
+
+    subgraph Decoder
+        D1[Media Decoder]
+        D2[Raw Frame Buffer]
+        D1 --> D2
+    end
+
+    subgraph Transformer
+        T1[Frame Processor]
+        T2[Computer Vision<br/>Logic]
+        T1 --> T2
+    end
+
+    subgraph Encoder
+        E1[Canvas Renderer]
+        E2[Display Buffer]
+        E1 --> E2
+    end
+
+    VS --> D1
+    D2 --> |RGBA Pixels| T1
+    T2 --> |Processed Pixels| E1
+    E2 --> |60 FPS Display| Output
+
+    style VS fill:#f9f,stroke:#333
+    style D2 fill:#bbf,stroke:#333
+    style T2 fill:#bfb,stroke:#333
+    style E2 fill:#fbf,stroke:#333

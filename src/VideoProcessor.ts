@@ -25,8 +25,6 @@ export class VideoProcessor {
             '-i', 'pipe:0', // read from stdin
             '-f', 'rawvideo', // output format is raw video
             '-pix_fmt', 'rgba', // output pixel format is RGBA
-            '-analyzeduration',  '2147483647',
-            '-probesize', '2147483647',
             '-s', `${this.options.width}x${this.options.height}`, // frame size
             '-r', String(this.options.fps), // frame rate
             '-' // write to stdout
