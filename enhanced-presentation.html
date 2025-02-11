@@ -386,30 +386,22 @@ async function startVideoStream() {
         <div class="slide">
             <div class="slide-content">
                 <h2>Why Do We Need Compression?</h2>
-                <ul>
-                    <li>Raw Video Data Size:
-                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                            <li>1080p frame = 1920 × 1080 pixels</li>
-                            <li>Each pixel = 3 bytes (RGB) or 4 bytes (RGBA)</li>
-                            <li>Single 1080p frame = 1920 × 1080 × 3 = 6.2 MB</li>
-                            <li>At 30 FPS: 6.2 MB × 30 = 186 MB/second = 1.49 Gb/second</li>
-                            <li>One minute of raw video = 11.16 GB!</li>
-                        </ul>
-                    </li>
-                    <li>Modern Compression Solutions:
-                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                            <li>H.264/AVC can achieve 95-98% size reduction while maintaining quality</li>
-                            <li>1.49 Gb/s → 5-15 Mb/s after compression</li>
-                            <li>One minute of compressed 1080p ≈ 75-225 MB (vs 11.16 GB raw)</li>
-                        </ul>
-                    </li>
-                    <li>For Computer Vision Applications:
-                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                            <li>Must decode compressed stream back to raw pixels for processing</li>
-                            <li>Requires efficient pipeline: Decode → Transform → Process → Encode</li>
-                            <li>Memory and CPU optimization crucial for real-time performance</li>
-                        </ul>
-                    </li>
+                <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+
+                    <li>1080p frame = 1920 × 1080 pixels</li>
+                    <li>Each pixel = 3 bytes (RGB) or 4 bytes (RGBA)</li>
+                    <li>Single 1080p frame = 1920 × 1080 × 3 = 6.2 MB</li>
+                    <li>At 30 FPS: 6.2 MB × 30 = 186 MB/second = 1.49 Gb/second</li>
+                    <li>One minute of raw video = 11.16 GB!</li>
+
+                    <li>H.264/AVC can achieve 95-98% size reduction while maintaining quality</li>
+                    <li>1.49 Gb/s → 5-15 Mb/s after compression</li>
+                    <li>One minute of compressed 1080p ≈ 75-225 MB (vs 11.16 GB raw)</li>
+
+                    <li>Must decode compressed stream back to raw pixels for processing</li>
+                    <li>Requires efficient pipeline: Decode → Transform → Process → Encode</li>
+                    <li>Memory and CPU optimization crucial for real-time performance</li>
+
                 </ul>
             </div>
         </div>
@@ -463,14 +455,14 @@ async function startVideoStream() {
                             <li>FFmpeg is a powerful open-source multimedia framework for handling video, audio, and
                                 other multimedia files</li>
                             <li>Key Components:
-                                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                <ul style="margin-left: 2rem; margin-top: 0.25rem;">
                                     <li>ffmpeg: Command-line tool for media conversion</li>
                                     <li>ffplay: Media player for testing and debugging</li>
                                     <li>ffprobe: Media stream analyzer</li>
                                 </ul>
                             </li>
                             <li>Common CV Applications:
-                                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                <ul style="margin-left: 2rem; margin-top: 0.25rem;">
                                     <li>Video format conversion for preprocessing</li>
                                     <li>Frame extraction for analysis</li>
                                     <li>Real-time streaming and processing</li>
@@ -506,21 +498,21 @@ async function startVideoStream() {
                 <h2>Complete Processing Pipeline</h2>
                 <ul>
                     <li>Stage 1 - Input Decoding:
-                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
                             <li>Input video stream (H.264, VP8, etc.) is fed into first FFmpeg process</li>
                             <li>FFmpeg decodes stream into sequence of raw RGBA frames</li>
                             <li>Uses rawvideo codec and rgba pixel format for maximum compatibility</li>
                         </ul>
                     </li>
                     <li>Stage 2 - CV Processing:
-                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
                             <li>Each raw frame is processed by custom CV application</li>
                             <li>Can implement motion detection, object recognition, or other CV logic</li>
                             <li>Operates on raw pixel data for maximum flexibility</li>
                         </ul>
                     </li>
                     <li>Stage 3 - Output Encoding:
-                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
                             <li>Processed frames are fed into second FFmpeg process</li>
                             <li>FFmpeg re-encodes frames into compressed video stream</li>
                         </ul>
@@ -538,7 +530,7 @@ async function startVideoStream() {
                     <div style="flex: 1;">
                         <ul>
                             <li>RGBA Frame: Complete frame of video with metadata</li>
-                            <li>Video Processor Options: Configuration for processing pipeline</li>
+                            <li>Detected Object: Output of object detection pipeline</li>
                             <li>Pixel: Simple x,y coordinate representation</li>
                             <li>These types form the foundation of our video processing system</li>
                         </ul>
@@ -553,13 +545,13 @@ interface RGBAFrame {
     timestamp: number;    // Time in ms
 }
 
-interface VideoProcessorOptions {
-    fps?: number;         // Frames per second
-    frameQuality?: number;
-    videoBitrate?: string;
-    videoCodec?: string;
-    width?: number;       // Output width
-    height?: number;      // Output height
+interface DetectedObject {
+    token: string;
+    percent: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
 }
 
 interface Pixel {
@@ -794,11 +786,11 @@ export class ColorInverter extends Transform {
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
                         <div>
-                            <h3 style="margin-bottom: 0.5rem;">Original Video</h3>
+                            <h3 style="margin-bottom: 0.25rem;">Original Video</h3>
                             <video src="street.mp4" controls style="width: 100%; border-radius: 4px;"></video>
                         </div>
                         <div>
-                            <h3 style="margin-bottom: 0.5rem;">Inverted Colors</h3>
+                            <h3 style="margin-bottom: 0.25rem;">Inverted Colors</h3>
                             <video src="street-inverted.mp4" controls style="width: 100%; border-radius: 4px;"></video>
                         </div>
                     </div>
@@ -812,7 +804,7 @@ export class ColorInverter extends Transform {
                 <h2>Our Motion Detection Implementation</h2>
 
 
-                <ul style="margin-left: 1rem; margin-top: 0.25rem; margin-bottom: 0.5rem">
+                <ul style="margin-left: 1rem; margin-top: 0.25rem; margin-bottom: 0.25rem">
 
                     <li style="margin-bottom: 0.25rem">Stores the previous frame buffer for comparison with current
                         frame</li>
@@ -891,7 +883,7 @@ private handleFrame(frame: RGBAFrame): RGBAFrame {
                 </div>
             </div>
         </div>
-        
+
         <!-- Motion Detection Demo -->
         <div class="slide">
             <div class="slide-content">
@@ -941,6 +933,87 @@ currentFrame: Buffer, width: number): Pixel[] {
                 </div>
             </div>
         </div>
+
+        <!-- Object Detection Introduction -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Object Detection with OpenCV and YOLO</h2>
+                <ul>
+                    <li>OpenCV (Open Computer Vision):
+                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+                            <li>Industry-standard framework for image processing</li>
+                            <li>Provides essential tools for preprocessing and analysis</li>
+                            <li>Optimized for real-time applications</li>
+                            <li>Extensive library of algorithms for image transformation and feature detection</li>
+                        </ul>
+                    </li>
+                    <li>YOLOv3 (You Only Look Once):
+                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+                            <li>State-of-the-art real-time object detection system</li>
+                            <li>Single neural network predicts bounding boxes and class probabilities</li>
+                            <li>Can detect 80+ object classes in real-time (COCO dataset)</li>
+                            <li>Processes images in a single forward pass, making it extremely fast</li>
+                        </ul>
+                    </li>
+                    <li>Performance and Applications:
+                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+                            <li>Achieves 45 FPS on modern GPUs while maintaining high accuracy</li>
+                            <li>Effective at detecting small objects and objects in groups</li>
+                            <li>Used in autonomous vehicles, surveillance systems, and retail analytics</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+        <!-- Object Detection Implementation -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Object Detection implementation - object_detector.cpp</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Implementation uses OpenCV's Deep Neural Network (DNN) module with YOLO (You Only Look
+                                Once) model</li>
+                            <li>Processes video frames as JPEG images through stdin, enabling stream processing</li>
+
+                            <li>Real-time object detection with configurable confidence threshold</li>
+
+                            <li>JSON output format for easy integration</li>
+
+                            <li>Runs neural network inference</li>
+                            <li>Processes detections and apply confidence filtering</li>
+                            <li>Outputs bounding boxes with class labels and confidence scores</li>
+
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+// Sample detection output format
+[
+    {
+        "token": "person",
+        "height": 380,
+        "x": 250,
+        "y": 120,
+        "width": 200,
+        "percent": 98
+    },
+    {
+        "token": "car",
+        "height": 150,
+        "x": 400,
+        "y": 300,
+        "width": 250,
+        "percent": 95
+    }
+]</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
     </div>

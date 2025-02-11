@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2024 Mikhail Garber. ALL RIGHTS RESERVED.
+Copyright 2021-2025 Mikhail Garber. ALL RIGHTS RESERVED.
 See LICENSE for copying
 */
 #include <fstream>
