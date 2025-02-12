@@ -413,35 +413,20 @@ async function startVideoStream() {
             <div class="slide-content">
                 <h2>Common Processing Flow</h2>
                 <div class="mermaid">
-                    flowchart LR
-                    subgraph Input
-                    VS[Video Stream<br />H.264/VP8/etc]
-                    end
+                    flowchart TD
+    VS[Video Stream<br/>H.264/VP8/etc]
+    D1[Stream-to-Frames<br/>Decoder]
+    T2[Computer Vision<br/>Logic]
+    E1[Frames-to-Stream<br/>Encoder]
+    Output[Output Stream]
 
-                    subgraph Decoder
-                    D1[Stream-to-Frames Decoder]
-                    D2[Raw Frame Buffer]
-                    D1 --> D2
-                    end
+    VS --> D1
+    D1 --> |RGBA Pixels| T2
+    T2 -->|Processed Pixels| E1
+    E1 -->|Video Stream| Output
 
-                    subgraph Transformer
-                    T1[Frame Processor]
-                    T2[Computer Vision<br />Logic]
-                    T1 --> T2
-                    end
-
-                    subgraph Encoder
-                    E1[Frames-to-Stream Encoder]
-                    end
-
-                    VS --> D1
-                    D2 --> |RGBA Pixels| T1
-                    T2 --> |Processed Pixels| E1
-                    E1 --> |Video Stream| Output
-
-                    style VS fill:#f9f,stroke:#333
-                    style D2 fill:#bbf,stroke:#333
-                    style T2 fill:#bfb,stroke:#333
+    style VS fill:#f9f,stroke:#333
+    style T2 fill:#bfb,stroke:#333
                 </div>
             </div>
         </div>
@@ -934,6 +919,54 @@ currentFrame: Buffer, width: number): Pixel[] {
             </div>
         </div>
 
+
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Motion Detection: Practical Applications</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Real-time security monitoring with configurable sensitivity thresholds and automatic alarm state management</li>
+                            <li>Automated lighting control systems that respond to room occupancy for energy efficiency</li>
+                            <li>Industrial safety monitoring for detecting unauthorized movement in restricted zones</li>
+                            <li>Smart home automation triggers based on presence detection</li>
+                            <li>Traffic monitoring systems for vehicle movement detection</li>
+                            <li>Retail analytics for customer movement patterns</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+        // Motion Detection Core Logic
+        
+        function motionDetected(pixelCount: number): void {
+            if (pixelCount > DETECTION_THRESHOLD) {
+                // Significant motion detected
+                if (state === "quiet") {
+                    referenceCount += pixelCount;
+                    if (referenceCount > ALARM_THRESHOLD) {
+                        state = "alarm";
+                        // Trigger alarm actions
+                        referenceCount = 0;
+                    }
+                }
+            } else {
+                // Minimal or no motion
+                if (state === "alarm") {
+                    referenceCount += 1;
+                    if (referenceCount > QUIET_THRESHOLD) {
+                        state = "quiet";
+                        referenceCount = 0;
+                    }
+                }
+            }
+        }</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Object Detection Introduction -->
         <div class="slide">
             <div class="slide-content">
@@ -962,6 +995,31 @@ currentFrame: Buffer, width: number): Pixel[] {
                             <li>Used in autonomous vehicles, surveillance systems, and retail analytics</li>
                         </ul>
                     </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Neural Networks Introduction -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Understanding Neural Networks</h2>
+                <ul>
+                    <li>Neural networks are computer systems inspired by the human brain - they learn from examples just
+                        like we do</li>
+                    <li>They consist of digital neurons organized in layers, starting with an input layer that takes in
+                        raw data (like pixel values from an image)</li>
+                    <li>The middle "hidden" layers process and transform this data, detecting patterns and features
+                        automatically</li>
+                    <li>The output layer makes the final decision - for example, identifying an object as "this is a
+                        cat"</li>
+                    <li>Instead of being explicitly programmed with rules, neural networks learn by analyzing thousands
+                        of examples</li>
+                    <li>For instance, after seeing 10,000 pictures of cats and dogs, they learn to recognize distinctive
+                        features like whiskers, ears, and tails</li>
+                    <li>This learned knowledge then allows them to identify similar objects in new images they've never
+                        seen before</li>
+                    <li>This powerful ability to learn from examples makes neural networks ideal for tasks like object
+                        recognition, face detection, and scene understanding</li>
                 </ul>
             </div>
         </div>
@@ -1014,74 +1072,361 @@ currentFrame: Buffer, width: number): Pixel[] {
             </div>
         </div>
 
+        <!-- Object Detection Overview -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Object Detection Transform Overview</h2>
+                <ul>
+                    <li>Implements a Node.js Transform stream for real-time object detection</li>
+                    <li>Uses a C++ binary (YOLO-based detector) for the actual detection</li>
+                    <li>Processes RGBA frames and adds visual indicators for detected objects</li>
+                    <li>Communicates via stdin/stdout with the C++ process</li>
+                </ul>
+                <pre class="code-block">
+export class ObjectDetector extends Transform {
+    private objectDetectorProcess: ChildProcessWithoutNullStreams;
+    private chunks: Buffer[] = [];
+    
+    constructor() {
+        super({
+            objectMode: true,
+        });
+        // Initialize object detector process
+        this.objectDetectorProcess = spawn(objectDetectorPath, [
+            modelNamesPath,
+            modelConfigPath,
+            modelWeightsPath,
+            "0.6"  // confidence threshold
+        ]);
+    }
+}</pre>
+            </div>
+        </div>
 
+        <!-- Frame Processing Pipeline -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Frame Processing Pipeline</h2>
+                <div class="split-content">
+                    <div class="split-pane">
+                        <ul>
+                            <li>Each video frame goes through multiple stages:</li>
+                            <li>1. Convert RGBA buffer to JPEG format</li>
+                            <li>2. Send JPEG to C++ detector process</li>
+                            <li>3. Receive and parse detection results</li>
+                            <li>4. Draw detection boxes on original frame</li>
+                        </ul>
+                    </div>
+                    <div class="split-pane">
+                        <pre class="code-block">
+private async handleFrame(frame: RGBAFrame): Promise<RGBAFrame> {
+    // Convert to JPEG for detector
+    const jpegBuffer = await rgbaToJpeg(frame.data, {
+        height: frame.height,
+        width: frame.width,
+        quality: 80
+    });
 
-    </div>
+    // Send to detector and await results
+    const detections = await new Promise((resolve) => {
+        this.odResolve = resolve;
+        this.objectDetectorProcess.stdin.write(jpegBuffer);
+    });
 
-    <div class="nav">
-        <button onclick="previousSlide()" id="prevBtn">Previous</button>
-        <span class="slide-counter" id="slideCounter">1 / 10</span>
-        <button onclick="nextSlide()" id="nextBtn">Next</button>
-    </div>
+    // Process detections and modify frame
+    let newData = Buffer.from(frame.data);
+    // ... draw detection boxes ...
+    return frame;
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <script>
-        // Initialize Mermaid
-        mermaid.initialize({ startOnLoad: true });
+        <!-- Detection Results Processing -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Processing Detection Results</h2>
+                <div class="split-content">
+                    <div class="split-pane">
+                        <ul>
+                            <li>Each detection includes:</li>
+                            <li>- Object class (token)</li>
+                            <li>- Confidence score (percent)</li>
+                            <li>- Bounding box (x, y, width, height)</li>
+                            <li>Results are used to draw yellow boxes</li>
+                            <li>Text annotations added for each detection</li>
+                        </ul>
+                    </div>
+                    <div class="split-pane">
+                        <pre class="code-block">
 
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const totalSlides = slides.length;
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const counter = document.getElementById('slideCounter');
-        const progressBar = document.getElementById('progressBar');
+// Drawing detection boxes
+for (const detection of detections) {
+    const { x, y, width, height } = detection;
+    // Draw horizontal lines
+    for (let i = x; i < x + width; i++) {
+        newData[(y * frame.width + i) * 4] = 255;     // R
+        newData[(y * frame.width + i) * 4 + 1] = 255; // G
+        newData[(y * frame.width + i) * 4 + 2] = 0;   // B
+    }
+    // ... draw vertical lines ...
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        function updateSlides() {
-            slides.forEach((slide, index) => {
-                slide.classList.remove('active', 'previous');
-                if (index === currentSlide) {
-                    slide.classList.add('active');
-                } else if (index < currentSlide) {
-                    slide.classList.add('previous');
+        <!-- Error Handling and Cleanup -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Stream Management and Cleanup</h2>
+                <div class="split-content">
+                    <div class="split-pane">
+                        <ul>
+                            <li>Handles process stdout/stderr streams</li>
+                            <li>Accumulates output chunks until complete JSON</li>
+                            <li>Proper process cleanup on stop</li>
+                        </ul>
+                    </div>
+                    <div class="split-pane">
+                        <pre class="code-block">
+// Output handling
+this.objectDetectorProcess.stdout.on('data', (chunk) => {
+    const outputString = chunk.toString();
+    this.chunks.push(chunk);
+    if (outputString.indexOf(']') > -1) {
+        const obj = JSON.parse(
+            Buffer.concat(this.chunks).toString()
+        );
+        this.chunks = [];
+        if (this.odResolve !== (() => {})) {
+            this.odResolve(obj);
+            this.odResolve = () => {};
+        }
+    }
+});
+
+// Cleanup
+public stop(): void {
+    console.log('Stopping Object Detector...');
+    this.objectDetectorProcess.kill();
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Object Detection Demo</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Real-time object detection using YOLOv3 neural network model</li>
+                            <li>Detects and classifies 80+ object types including people, vehicles, and common objects</li>
+                            <li>Achieves 30+ FPS processing speed on modern hardware</li>
+                            <li>Highlights detected objects with yellow bounding boxes</li>
+                            <li>Labels each detection with object class and confidence score</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 2;">
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Original Video</h3>
+                                <video 
+                                    src="street.mp4" 
+                                    controls 
+                                    style="width: 70%; height: auto; border-radius: 8px;"
+                                ></video>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">With Object Detection</h3>
+                                <video 
+                                    src="street-object-detection.mp4" 
+                                    controls 
+                                    style="width: 70%; height: auto; border-radius: 8px;"
+                                ></video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Intelligent Scene Understanding</h2>
+                <ul>
+                    <li>Scene Understanding: Maintains an active scene model by tracking detected objects and their changes over time, enabling continuous monitoring of the environment</li>
+                    <li>Confidence Filtering: Implements an 80% confidence threshold to ensure reliable detections and minimize false positives, crucial for real-world applications</li>
+                    <li>Object Persistence: Uses sophisticated size comparison (10% threshold) to track objects across frames, determining whether objects are new or existing in the scene</li>
+                    <li>Change Detection: Actively monitors object entry and exit from the scene, providing real-time awareness of environmental changes</li>
+                    <li>Real-world Applications: Powers security systems, retail analytics, automated inventory management, and smart surveillance solutions</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Object Detection Implementation -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Scene Management Implementation</h2>
+                <pre class="code-block">
+export function objectsDetected(objects: DetectedObject[]): void {
+    const previousScene = [...scene];
+    for (const object of objects) {
+        if (object.percent > CONFIDENT_THRESHOLD) {
+            const existingObjects = scene.filter(o => o.token === object.token);
+            let found = false;
+            if (existingObjects.length > 0) {
+                for (const existingObject of existingObjects) {
+                    const sizeDiff = Math.abs(existingObject.width - object.width) / existingObject.width;
+                    if (sizeDiff < SIZE_THRESHOLD) {
+                        previousScene.splice(previousScene.indexOf(existingObject), 1);
+                        scene[scene.indexOf(existingObject)] = object;
+                        found = true;
+                    }
+                }
+            }
+            if (!found) {
+                console.log(`New object detected: ${object.token}`);
+                scene.push(object);
+            }
+        }
+    }
+    for (const object of previousScene) {
+        const index = scene.indexOf(object);
+        if (index > -1) {
+            console.log(`Object disappeared: ${object.token}`);
+            scene.splice(index, 1);
+        }
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Cloud-Based Computer Vision Solutions</h2>
+                <ul>
+                    <li>Amazon Rekognition: Pre-trained deep learning models for image and video analysis, including facial recognition, object detection, and text extraction</li>
+                    <li>Google Cloud Vision AI: Advanced ML models for image classification, object detection, OCR, and explicit content detection</li>
+                    <li>Microsoft Azure Computer Vision: Comprehensive suite of vision APIs for image analysis, face detection, and custom model training</li>
+                    <li>Smart Security Cameras: Arlo, Nest, and Ring offer built-in CV capabilities for motion detection and object recognition</li>
+                    <li>Edge Computing Solutions: AWS Panorama and Google Coral enable on-premise processing with cloud integration</li>
+                    <li>Specialized APIs: Services like Clarifai and CloudSight offer domain-specific computer vision models</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Limitations of Cloud-Based CV -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Limitations of Cloud-Based Computer Vision</h2>
+                <ul>
+                    <li>Cost becomes prohibitive at scale due to pay-per-use pricing, bandwidth costs, and enterprise-level contract requirements</li>
+                    <li>Privacy concerns arise from sending sensitive data outside your network, along with GDPR/HIPAA compliance challenges and limited data control</li>
+                    <li>Vendor lock-in through proprietary APIs and closed-source solutions makes migration difficult and limits customization options</li>
+                    <li>Performance suffers from network latency and connectivity dependencies, impacting real-time processing capabilities</li>
+                </ul>
+            </div>
+        </div>
+
+         <!-- Face Detection and Privacy -->
+         <div class="slide">
+            <div class="slide-content">
+                <h2>Face Detection (NOT in this presentation...)</h2>
+                <ul>
+                    <li>Face detection uses cascade classifiers or deep learning to identify and track facial features in images and video</li>
+                    <li>Technology can detect multiple faces simultaneously and provide real-time tracking of location, size, and orientation</li>
+                    <li>Biometric data from face detection requires special handling under privacy regulations like GDPR and CCPA</li>
+                    <li>Organizations must obtain clear consent and establish data retention policies for facial data</li>
+                    <li>Best practices include data minimization, opt-out mechanisms, and secure storage protocols</li>
+                    <li>Regular security audits help ensure ongoing protection of sensitive facial recognition data</li>
+                    <li>Consider ethical implications when implementing face detection in public spaces</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Questions?</h2>
+                <ul>
+                    <li>...</li>
+                </ul>
+                <h2>Parting Thoughts?</h2>
+                <ul>
+                    <li>...</li>
+                </ul>
+
+            </div>
+        </div>
+
+        <div class="nav">
+            <button onclick="previousSlide()" id="prevBtn">Previous</button>
+            <span class="slide-counter" id="slideCounter">1 / 10</span>
+            <button onclick="nextSlide()" id="nextBtn">Next</button>
+        </div>
+
+        <script>
+            // Initialize Mermaid
+            mermaid.initialize({ startOnLoad: true });
+
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const counter = document.getElementById('slideCounter');
+            const progressBar = document.getElementById('progressBar');
+
+            function updateSlides() {
+                slides.forEach((slide, index) => {
+                    slide.classList.remove('active', 'previous');
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    } else if (index < currentSlide) {
+                        slide.classList.add('previous');
+                    }
+                });
+
+                // Update counter and buttons
+                counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.disabled = currentSlide === totalSlides - 1;
+
+                // Update progress bar
+                const progress = ((currentSlide + 1) / totalSlides) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateSlides();
+                }
+            }
+
+            function previousSlide() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlides();
+                }
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    previousSlide();
                 }
             });
 
-            // Update counter and buttons
-            counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
-            prevBtn.disabled = currentSlide === 0;
-            nextBtn.disabled = currentSlide === totalSlides - 1;
-
-            // Update progress bar
-            const progress = ((currentSlide + 1) / totalSlides) * 100;
-            progressBar.style.width = `${progress}%`;
-        }
-
-        function nextSlide() {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateSlides();
-            }
-        }
-
-        function previousSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlides();
-            }
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === ' ') {
-                nextSlide();
-            } else if (e.key === 'ArrowLeft') {
-                previousSlide();
-            }
-        });
-
-        // Initialize progress bar
-        updateSlides();
-    </script>
+            // Initialize progress bar
+            updateSlides();
+        </script>
 </body>
 
 </html>

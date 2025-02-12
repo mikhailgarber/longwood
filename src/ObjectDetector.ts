@@ -3,6 +3,7 @@ import { RGBAFrame } from "./Types";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { rgbaToJpeg } from "./ImageConverter";
 import { writeTextOnImage } from "./Canvas";
+import { objectsDetected } from "./ObjectDetectionEventManager";
 
 
 const objectDetectorPath = '../object_detector/object_detector';
@@ -81,6 +82,7 @@ export class ObjectDetector extends Transform {
             this.objectDetectorProcess.stdin.write(jpegBuffer);
         });
         const detections = (await odPromise) as DetectedObject[];
+        objectsDetected(detections);
         console.log(`OD: Frame ${frame.sequence} processed with ${detections.length} detections`);
         let newData = Buffer.from(frame.data);
         for (const detection of detections) {
