@@ -663,7 +663,6 @@ private createFFmpegWriteStream(outputStream: Writable): Transform {
         '-f', 'mp4',
         '-'
     ]);
-
     // Create frame serializer
     const frameSerializer = new Transform({
         objectMode: true,
@@ -671,10 +670,8 @@ private createFFmpegWriteStream(outputStream: Writable): Transform {
             callback(null, frame.data);
         }
     });
-
     frameSerializer.pipe(ffmpeg.stdin);
     ffmpeg.stdout.pipe(outputStream);
-
     return frameSerializer;
 }</pre>
                     </div>
@@ -703,19 +700,14 @@ public async process(
     frameProcessor?: Transform
 ): Promise<void> {
     try {
-        // Create processing pipeline
         const readStream = this.createFFmpegReadStream(inputStream);
         const writeStream = this.createFFmpegWriteStream(outputStream);
-
-        // Default pass-through processor if none provided
         const processor = frameProcessor || new Transform({
             objectMode: true,
             transform(frame: RGBAFrame, encoding, callback) {
                 callback(null, frame);
             }
         });
-
-        // Connect all streams
         await pipeline(
             readStream,
             processor,
@@ -779,13 +771,10 @@ processor.process(
                 <div style="display: flex; gap: 2rem;">
                     <div style="flex: 1;">
                         <ul>
-                            <li>Simple yet effective demonstration of frame-by-frame processing</li>
+                            <li>Demonstration of frame-by-frame processing</li>
                             <li>Each pixel's color channels are inverted: new_value = 255 - original_value</li>
-                            <li>Maintains original video's resolution and frame rate</li>
-                            <li>Real-time processing possible with efficient implementation</li>
                         </ul>
                         <pre class="code-block">
-// Color inversion processing
 export class ColorInverter extends Transform {
     constructor() {
         super({
@@ -968,8 +957,6 @@ currentFrame: Buffer, width: number): Pixel[] {
                     </div>
                     <div style="flex: 1;">
                         <pre class="code-block">
-        // Motion Detection Core Logic
-        
         function motionDetected(pixelCount: number): void {
             if (pixelCount > DETECTION_THRESHOLD) {
                 // Significant motion detected
@@ -1004,7 +991,7 @@ currentFrame: Buffer, width: number): Pixel[] {
                 <h2>Object Detection with OpenCV and YOLO</h2>
                 <ul>
                     <li>OpenCV (Open Computer Vision):
-                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+                        <ul style="margin-left: 2rem; margin-top: 0.20rem;">
                             <li>Industry-standard framework for image processing</li>
                             <li>Provides essential tools for preprocessing and analysis</li>
                             <li>Optimized for real-time applications</li>
@@ -1012,7 +999,7 @@ currentFrame: Buffer, width: number): Pixel[] {
                         </ul>
                     </li>
                     <li>YOLOv3 (You Only Look Once):
-                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+                        <ul style="margin-left: 2rem; margin-top: 0.20rem;">
                             <li>State-of-the-art real-time object detection system</li>
                             <li>Single neural network predicts bounding boxes and class probabilities</li>
                             <li>Can detect 80+ object classes in real-time (COCO dataset)</li>
@@ -1020,7 +1007,7 @@ currentFrame: Buffer, width: number): Pixel[] {
                         </ul>
                     </li>
                     <li>Performance and Applications:
-                        <ul style="margin-left: 2rem; margin-top: 0.25rem;">
+                        <ul style="margin-left: 2rem; margin-top: 0.20rem;">
                             <li>Achieves 45 FPS on modern GPUs while maintaining high accuracy</li>
                             <li>Effective at detecting small objects and objects in groups</li>
                             <li>Used in autonomous vehicles, surveillance systems, and retail analytics</li>
@@ -1115,9 +1102,6 @@ currentFrame: Buffer, width: number): Pixel[] {
                 </ul>
                 <pre class="code-block">
 export class ObjectDetector extends Transform {
-    private objectDetectorProcess: ChildProcessWithoutNullStreams;
-    private chunks: Buffer[] = [];
-    
     constructor() {
         super({
             objectMode: true,
@@ -1145,7 +1129,6 @@ export class ObjectDetector extends Transform {
                             <li>1. Convert RGBA buffer to JPEG format</li>
                             <li>2. Send JPEG to C++ detector process</li>
                             <li>3. Receive and parse detection results</li>
-                            <li>4. Draw detection boxes on original frame</li>
                         </ul>
                     </div>
                     <div class="split-pane">
@@ -1157,13 +1140,11 @@ private async handleFrame(frame: RGBAFrame): Promise<RGBAFrame> {
         width: frame.width,
         quality: 80
     });
-
     // Send to detector and await results
     const detections = await new Promise((resolve) => {
         this.odResolve = resolve;
         this.objectDetectorProcess.stdin.write(jpegBuffer);
     });
-
     // Process detections and modify frame
     let newData = Buffer.from(frame.data);
     // ... draw detection boxes ...
@@ -1181,18 +1162,12 @@ private async handleFrame(frame: RGBAFrame): Promise<RGBAFrame> {
                 <div class="split-content">
                     <div class="split-pane">
                         <ul>
-                            <li>Each detection includes:</li>
-                            <li>- Object class (token)</li>
-                            <li>- Confidence score (percent)</li>
-                            <li>- Bounding box (x, y, width, height)</li>
-                            <li>Results are used to draw yellow boxes</li>
+                            <li>Detection results are used to draw yellow boxes</li>
                             <li>Text annotations added for each detection</li>
                         </ul>
                     </div>
                     <div class="split-pane">
                         <pre class="code-block">
-
-// Drawing detection boxes
 for (const detection of detections) {
     const { x, y, width, height } = detection;
     // Draw horizontal lines
@@ -1222,7 +1197,6 @@ for (const detection of detections) {
                     </div>
                     <div class="split-pane">
                         <pre class="code-block">
-// Output handling
 this.objectDetectorProcess.stdout.on('data', (chunk) => {
     const outputString = chunk.toString();
     this.chunks.push(chunk);
@@ -1237,8 +1211,6 @@ this.objectDetectorProcess.stdout.on('data', (chunk) => {
         }
     }
 });
-
-// Cleanup
 public stop(): void {
     console.log('Stopping Object Detector...');
     this.objectDetectorProcess.kill();
@@ -1326,13 +1298,8 @@ export function objectsDetected(objects: DetectedObject[]): void {
             }
         }
     }
-    for (const object of previousScene) {
-        const index = scene.indexOf(object);
-        if (index > -1) {
-            console.log(`Object disappeared: ${object.token}`);
-            scene.splice(index, 1);
-        }
-    }
+    // remove objects still in the previous scene from scene
+    ...
 }</pre>
             </div>
         </div>
