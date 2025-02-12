@@ -101,12 +101,12 @@
         .code-block {
             background: #1a202c;
             color: #e2e8f0;
-            padding: 1.5rem;
+            padding: 1.3rem;
             border-radius: 8px;
             overflow-x: auto;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 1.1rem;
-            line-height: 1.5;
+            line-height: 1.3;
         }
 
         /* Demo Slides */
@@ -894,25 +894,25 @@ public _transform(frame: any, encoding: string,
                     <div style="flex: 1;">
                         <pre class="code-block">
 private differentPixels(previousFrame: Buffer, 
-currentFrame: Buffer, width: number): Pixel[] {
- const threshold = 70; // predefined level
- const totalPixels = previousFrame.length / 4;
- const step = Math.floor(totalPixels / 
- (totalPixels * 0.25)); // 25% of total pixels
- const pixels: Pixel[] = [];
- for (let i = 0; i < previousFrame.length; i += 4 * step) { 
-    // assuming rgba format
-    const prevLuminocity = this.luminocity(previousFrame[i], 
-    previousFrame[i + 1], previousFrame[i + 2]);
-    const currLuminocity = this.luminocity(currentFrame[i], 
-    currentFrame[i + 1], currentFrame[i + 2]);
-    if (Math.abs(prevLuminocity - currLuminocity) > threshold) {
-        pixels.push({
-            x: (i / 4) % width,
-            y: Math.floor(i / 4 / width)
-                    });
+ currentFrame: Buffer, width: number): Pixel[] {
+    const threshold = 70; // predefined level
+    const totalPixels = previousFrame.length / 4;
+    const step = Math.floor(totalPixels / 
+    (totalPixels * 0.25)); // 25% of total pixels
+    const pixels: Pixel[] = [];
+    for (let i = 0; i < previousFrame.length; i += 4 * step) { 
+        // assuming rgba format
+        const prevLuminocity = this.luminocity(previousFrame[i], 
+        previousFrame[i + 1], previousFrame[i + 2]);
+        const currLuminocity = this.luminocity(currentFrame[i], 
+        currentFrame[i + 1], currentFrame[i + 2]);
+        if (Math.abs(prevLuminocity - currLuminocity) > threshold) {
+            pixels.push({
+                x: (i / 4) % width,
+                y: Math.floor(i / 4 / width)
+                        });
+        }
     }
- }
  return pixels;
 }</pre>
                     </div>
