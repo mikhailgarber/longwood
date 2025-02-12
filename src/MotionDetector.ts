@@ -9,14 +9,9 @@ export class MotionDetector extends Transform {
         });
     }
 
-    public _transform(frame: any, encoding: string, callback: TransformCallback): void {
-        const newFrame = this.handleFrame(frame);
-        callback(null, newFrame);
-    }
-
     private previousFrame: Buffer | null = null;
 
-    private handleFrame(frame: RGBAFrame): RGBAFrame {
+    public _transform(frame: any, encoding: string, callback: TransformCallback): void {
         if (this.previousFrame) {
             const diff = this.differentPixels(this.previousFrame, frame.data, frame.width);
             const newData = Buffer.from(frame.data);
@@ -34,8 +29,7 @@ export class MotionDetector extends Transform {
         } else {
             this.previousFrame = frame.data;
         }
-
-        return frame;
+        callback(null, frame);
     }
 
     private differentPixels(previousFrame: Buffer, currentFrame: Buffer, width: number): Pixel[] {

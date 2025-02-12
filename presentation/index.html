@@ -414,19 +414,19 @@ async function startVideoStream() {
                 <h2>Common Processing Flow</h2>
                 <div class="mermaid">
                     flowchart TD
-    VS[Video Stream<br/>H.264/VP8/etc]
-    D1[Stream-to-Frames<br/>Decoder]
-    T2[Computer Vision<br/>Logic]
-    E1[Frames-to-Stream<br/>Encoder]
-    Output[Output Stream]
+                    VS[Video Stream<br />H.264/VP8/etc]
+                    D1[Stream-to-Frames<br />Decoder]
+                    T2[Computer Vision<br />Logic]
+                    E1[Frames-to-Stream<br />Encoder]
+                    Output[Output Stream]
 
-    VS --> D1
-    D1 --> |RGBA Pixels| T2
-    T2 -->|Processed Pixels| E1
-    E1 -->|Video Stream| Output
+                    VS --> D1
+                    D1 --> |RGBA Pixels| T2
+                    T2 -->|Processed Pixels| E1
+                    E1 -->|Video Stream| Output
 
-    style VS fill:#f9f,stroke:#333
-    style T2 fill:#bfb,stroke:#333
+                    style VS fill:#f9f,stroke:#333
+                    style T2 fill:#bfb,stroke:#333
                 </div>
             </div>
         </div>
@@ -439,20 +439,15 @@ async function startVideoStream() {
                         <ul>
                             <li>FFmpeg is a powerful open-source multimedia framework for handling video, audio, and
                                 other multimedia files</li>
-                            <li>Key Components:
-                                <ul style="margin-left: 2rem; margin-top: 0.25rem;">
-                                    <li>ffmpeg: Command-line tool for media conversion</li>
-                                    <li>ffplay: Media player for testing and debugging</li>
-                                    <li>ffprobe: Media stream analyzer</li>
-                                </ul>
-                            </li>
-                            <li>Common CV Applications:
-                                <ul style="margin-left: 2rem; margin-top: 0.25rem;">
-                                    <li>Video format conversion for preprocessing</li>
-                                    <li>Frame extraction for analysis</li>
-                                    <li>Real-time streaming and processing</li>
-                                </ul>
-                            </li>
+
+                            <li>ffmpeg: Command-line tool for media conversion</li>
+                            <li>ffplay: Media player for testing and debugging</li>
+                            <li>ffprobe: Media stream analyzer</li>
+
+                            <li>Video format conversion for preprocessing</li>
+                            <li>Frame extraction for analysis</li>
+                            <li>Real-time streaming and processing</li>
+
                         </ul>
                     </div>
                     <div style="flex: 1;">
@@ -736,6 +731,47 @@ public async process(
             </div>
         </div>
 
+        <!-- New Pipeline Setup Slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Setting Up the Processing Pipeline</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <ul>
+                            <li>Create input/output streams for video processing</li>
+                            <li>Configure VideoProcessor with desired parameters (FPS, dimensions)</li>
+                            <li>Add transform streams for frame processing</li>
+                            <li>Connect everything using Promise-based pipeline</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1;">
+                        <pre class="code-block">
+// Create or setup I/O streams
+const inputStream = createReadStream('input.mp4');
+const outputStream = createWriteStream('output.mp4');
+
+// Initialize processor with configuration
+const processor = new VideoProcessor({
+    fps: 30,
+    width: 1280,
+    height: 720
+});
+
+// Start processing pipeline
+processor.process(
+    inputStream,
+    outputStream,
+    new MyCustomTransformer()  // Transform stream
+).then(() => {
+    console.log('Processing complete');
+}).catch(err => {
+    console.error('Error:', err);
+});</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Frame Processing Demo -->
         <div class="slide">
             <div class="slide-content">
@@ -835,34 +871,26 @@ export class ColorInverter extends Transform {
                     </div>
                     <div style="flex: 1;">
                         <pre class="code-block">
-private handleFrame(frame: RGBAFrame): RGBAFrame {
+public _transform(frame: any, encoding: string, 
+    callback: TransformCallback): void {
     if (this.previousFrame) {
-        // Get pixels that changed vs previous frame
         const diff = this.differentPixels(
-            this.previousFrame, 
-            frame.data, 
-            frame.width
-        );
-        
-        // Create new buffer for modified frame
+            this.previousFrame, frame.data, frame.width);
         const newData = Buffer.from(frame.data);
-        
-        // Paint changed pixels yellow
         for (let i = 0; i < diff.length; i += 4) {
             const pixel = diff[i];
             const index = (pixel.y * frame.width + pixel.x) * 4;
-            newData[index] = 255;     // R
-            newData[index + 1] = 255; // G
-            newData[index + 2] = 0;   // B
-            newData[index + 3] = 255; // A
+            newData[index] = 255;       // R
+            newData[index + 1] = 255;   // G
+            newData[index + 2] = 0;     // B
+            newData[index + 3] = 255;   // A
         }
-        
         this.previousFrame = frame.data;
         frame.data = newData;
     } else {
         this.previousFrame = frame.data;
     }
-    return frame;
+    callback(null, frame);
 }</pre>
                     </div>
                 </div>
@@ -927,9 +955,12 @@ currentFrame: Buffer, width: number): Pixel[] {
                 <div style="display: flex; gap: 2rem;">
                     <div style="flex: 1;">
                         <ul>
-                            <li>Real-time security monitoring with configurable sensitivity thresholds and automatic alarm state management</li>
-                            <li>Automated lighting control systems that respond to room occupancy for energy efficiency</li>
-                            <li>Industrial safety monitoring for detecting unauthorized movement in restricted zones</li>
+                            <li>Real-time security monitoring with configurable sensitivity thresholds and automatic
+                                alarm state management</li>
+                            <li>Automated lighting control systems that respond to room occupancy for energy efficiency
+                            </li>
+                            <li>Industrial safety monitoring for detecting unauthorized movement in restricted zones
+                            </li>
                             <li>Smart home automation triggers based on presence detection</li>
                             <li>Traffic monitoring systems for vehicle movement detection</li>
                             <li>Retail analytics for customer movement patterns</li>
@@ -1225,7 +1256,8 @@ public stop(): void {
                     <div style="flex: 1;">
                         <ul>
                             <li>Real-time object detection using YOLOv3 neural network model</li>
-                            <li>Detects and classifies 80+ object types including people, vehicles, and common objects</li>
+                            <li>Detects and classifies 80+ object types including people, vehicles, and common objects
+                            </li>
                             <li>Achieves 30+ FPS processing speed on modern hardware</li>
                             <li>Highlights detected objects with yellow bounding boxes</li>
                             <li>Labels each detection with object class and confidence score</li>
@@ -1235,19 +1267,13 @@ public stop(): void {
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             <div>
                                 <h3 class="text-lg font-semibold mb-2">Original Video</h3>
-                                <video 
-                                    src="street.mp4" 
-                                    controls 
-                                    style="width: 70%; height: auto; border-radius: 8px;"
-                                ></video>
+                                <video src="street.mp4" controls
+                                    style="width: 70%; height: auto; border-radius: 8px;"></video>
                             </div>
                             <div>
                                 <h3 class="text-lg font-semibold mb-2">With Object Detection</h3>
-                                <video 
-                                    src="street-object-detection.mp4" 
-                                    controls 
-                                    style="width: 70%; height: auto; border-radius: 8px;"
-                                ></video>
+                                <video src="street-object-detection.mp4" controls
+                                    style="width: 70%; height: auto; border-radius: 8px;"></video>
                             </div>
                         </div>
                     </div>
@@ -1259,11 +1285,16 @@ public stop(): void {
             <div class="slide-content">
                 <h2>Intelligent Scene Understanding</h2>
                 <ul>
-                    <li>Scene Understanding: Maintains an active scene model by tracking detected objects and their changes over time, enabling continuous monitoring of the environment</li>
-                    <li>Confidence Filtering: Implements an 80% confidence threshold to ensure reliable detections and minimize false positives, crucial for real-world applications</li>
-                    <li>Object Persistence: Uses sophisticated size comparison (10% threshold) to track objects across frames, determining whether objects are new or existing in the scene</li>
-                    <li>Change Detection: Actively monitors object entry and exit from the scene, providing real-time awareness of environmental changes</li>
-                    <li>Real-world Applications: Powers security systems, retail analytics, automated inventory management, and smart surveillance solutions</li>
+                    <li>Scene Understanding: Maintains an active scene model by tracking detected objects and their
+                        changes over time, enabling continuous monitoring of the environment</li>
+                    <li>Confidence Filtering: Implements an 80% confidence threshold to ensure reliable detections and
+                        minimize false positives, crucial for real-world applications</li>
+                    <li>Object Persistence: Uses sophisticated size comparison (10% threshold) to track objects across
+                        frames, determining whether objects are new or existing in the scene</li>
+                    <li>Change Detection: Actively monitors object entry and exit from the scene, providing real-time
+                        awareness of environmental changes</li>
+                    <li>Real-world Applications: Powers security systems, retail analytics, automated inventory
+                        management, and smart surveillance solutions</li>
                 </ul>
             </div>
         </div>
@@ -1310,12 +1341,18 @@ export function objectsDetected(objects: DetectedObject[]): void {
             <div class="slide-content">
                 <h2>Cloud-Based Computer Vision Solutions</h2>
                 <ul>
-                    <li>Amazon Rekognition: Pre-trained deep learning models for image and video analysis, including facial recognition, object detection, and text extraction</li>
-                    <li>Google Cloud Vision AI: Advanced ML models for image classification, object detection, OCR, and explicit content detection</li>
-                    <li>Microsoft Azure Computer Vision: Comprehensive suite of vision APIs for image analysis, face detection, and custom model training</li>
-                    <li>Smart Security Cameras: Arlo, Nest, and Ring offer built-in CV capabilities for motion detection and object recognition</li>
-                    <li>Edge Computing Solutions: AWS Panorama and Google Coral enable on-premise processing with cloud integration</li>
-                    <li>Specialized APIs: Services like Clarifai and CloudSight offer domain-specific computer vision models</li>
+                    <li>Amazon Rekognition: Pre-trained deep learning models for image and video analysis, including
+                        facial recognition, object detection, and text extraction</li>
+                    <li>Google Cloud Vision AI: Advanced ML models for image classification, object detection, OCR, and
+                        explicit content detection</li>
+                    <li>Microsoft Azure Computer Vision: Comprehensive suite of vision APIs for image analysis, face
+                        detection, and custom model training</li>
+                    <li>Smart Security Cameras: Arlo, Nest, and Ring offer built-in CV capabilities for motion detection
+                        and object recognition</li>
+                    <li>Edge Computing Solutions: AWS Panorama and Google Coral enable on-premise processing with cloud
+                        integration</li>
+                    <li>Specialized APIs: Services like Clarifai and CloudSight offer domain-specific computer vision
+                        models</li>
                 </ul>
             </div>
         </div>
@@ -1325,23 +1362,31 @@ export function objectsDetected(objects: DetectedObject[]): void {
             <div class="slide-content">
                 <h2>Limitations of Cloud-Based Computer Vision</h2>
                 <ul>
-                    <li>Cost becomes prohibitive at scale due to pay-per-use pricing, bandwidth costs, and enterprise-level contract requirements</li>
-                    <li>Privacy concerns arise from sending sensitive data outside your network, along with GDPR/HIPAA compliance challenges and limited data control</li>
-                    <li>Vendor lock-in through proprietary APIs and closed-source solutions makes migration difficult and limits customization options</li>
-                    <li>Performance suffers from network latency and connectivity dependencies, impacting real-time processing capabilities</li>
+                    <li>Cost becomes prohibitive at scale due to pay-per-use pricing, bandwidth costs, and
+                        enterprise-level contract requirements</li>
+                    <li>Privacy concerns arise from sending sensitive data outside your network, along with GDPR/HIPAA
+                        compliance challenges and limited data control</li>
+                    <li>Vendor lock-in through proprietary APIs and closed-source solutions makes migration difficult
+                        and limits customization options</li>
+                    <li>Performance suffers from network latency and connectivity dependencies, impacting real-time
+                        processing capabilities</li>
                 </ul>
             </div>
         </div>
 
-         <!-- Face Detection and Privacy -->
-         <div class="slide">
+        <!-- Face Detection and Privacy -->
+        <div class="slide">
             <div class="slide-content">
                 <h2>Face Detection (NOT in this presentation...)</h2>
                 <ul>
-                    <li>Face detection uses cascade classifiers or deep learning to identify and track facial features in images and video</li>
-                    <li>Technology can detect multiple faces simultaneously and provide real-time tracking of location, size, and orientation</li>
-                    <li>Biometric data from face detection requires special handling under privacy regulations like GDPR and CCPA</li>
-                    <li>Organizations must obtain clear consent and establish data retention policies for facial data</li>
+                    <li>Face detection uses cascade classifiers or deep learning to identify and track facial features
+                        in images and video</li>
+                    <li>Technology can detect multiple faces simultaneously and provide real-time tracking of location,
+                        size, and orientation</li>
+                    <li>Biometric data from face detection requires special handling under privacy regulations like GDPR
+                        and CCPA</li>
+                    <li>Organizations must obtain clear consent and establish data retention policies for facial data
+                    </li>
                     <li>Best practices include data minimization, opt-out mechanisms, and secure storage protocols</li>
                     <li>Regular security audits help ensure ongoing protection of sensitive facial recognition data</li>
                     <li>Consider ethical implications when implementing face detection in public spaces</li>
