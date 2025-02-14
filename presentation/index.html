@@ -1279,7 +1279,7 @@ public stop(): void {
 export function objectsDetected(objects: DetectedObject[]): void {
     const previousScene = [...scene];
     for (const object of objects) {
-        if (object.percent > CONFIDENT_THRESHOLD) {
+        if (object.percent > CONFIDENCE_THRESHOLD) {
             const existingObjects = scene.filter(o => o.token === object.token);
             let found = false;
             if (existingObjects.length > 0) {
