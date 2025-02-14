@@ -1,6 +1,6 @@
 import { DetectedObject, ObjectDetector } from "./ObjectDetector";
 
-const CONFIDENT_THRESHOLD = 0.8;
+const CONFIDENCE_THRESHOLD = 0.8;
 const SIZE_THRESHOLD = 0.1;
 const POSITION_THRESHOLD = 0.1;
 
@@ -10,7 +10,7 @@ export function objectsDetected(objects: DetectedObject[]): void {
     console.log(`Objects detected: ${objects.length}`);
     const previousScene = [...scene];
     for (const object of objects) {
-        if (object.percent > CONFIDENT_THRESHOLD) {
+        if (object.percent > CONFIDENCE_THRESHOLD) {
             const existingObjects = scene.filter(o => o.token === object.token);
             let found = false;
             if (existingObjects.length > 0) {
